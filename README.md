@@ -33,7 +33,6 @@ The usage of LEDs for FAS Track is to indicate the switches that have been activ
 When the game starts in base mode, the LEDs are active on the available switches that can be
 used.
 
-```
 <img width="351" alt="Screen Shot 2022-08-06 at 4 36 41 AM" src="https://user-images.githubusercontent.com/49692422/183247256-ca4d3044-20f7-4e95-aa2b-8f1b203b0596.png">
 <img width="409" alt="Screen Shot 2022-08-06 at 4 36 38 AM" src="https://user-images.githubusercontent.com/49692422/183247260-a088cc13-d338-4781-96e7-1c2a981aab66.png">
 
