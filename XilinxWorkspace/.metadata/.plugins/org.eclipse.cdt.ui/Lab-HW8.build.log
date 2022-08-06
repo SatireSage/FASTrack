@@ -1,0 +1,7 @@
+02:46:13 **** Clean-only build of configuration Debug for project Lab-HW8 ****
+make clean 
+rm -rf  ./src/OLED.o ./src/asm.o ./src/main.o  ./src/OLED.d ./src/asm.d  ./src/main.d  Lab-HW8.elf.size  Lab-HW8.elf
+' '
+
+02:46:14 Build Finished (took 163ms)
+

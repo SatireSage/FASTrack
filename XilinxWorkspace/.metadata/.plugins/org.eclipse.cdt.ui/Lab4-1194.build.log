@@ -1,0 +1,7 @@
+22:27:38 **** Clean-only build of configuration Debug for project Lab4-1194 ****
+make clean 
+rm -rf  ./src/asm.o ./src/main.o  ./src/asm.d  ./src/main.d  Lab4-1194.elf.size  Lab4-1194.elf
+ 
+
+22:27:39 Build Finished (took 555ms)
+

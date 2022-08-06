@@ -1,0 +1,247 @@
+@ Code for Lab-HW8 for ENSC 254
+@ Copyright (C) 2022 Craig Scratchley
+
+
+@Declare the labels of the interrupt handler and the main routine as globals
+//.global FIQHandler
+
+#include "asm_include.h"
+#include "macros.i"
+#include "definitions.i"
+
+.equ E254_TC_CSR_NEEDED_MASKS, XTC_CSR_ENABLE_TMR_MASK | XTC_CSR_ENABLE_INT_MASK | XTC_CSR_DOWN_COUNT_MASK | XTC_CSR_AUTO_RELOAD_MASK | XTC_CSR_INT_OCCURED_MASK
+
+.text
+
+FUNC	asm_main
+	PUSH	{R4-R11, LR}
+	BL	OLED_clear
+	BL	OLED_welcome
+	LDR	R0, =0 @ total_events
+
+	@Switch to FIQ mode
+	LDR	R1, =XREG_CPSR_FIQ_MODE
+	MSR	CPSR_c, R1
+
+	@Initialize FIQ registers for the purposes
+	@of the FIQ being able to use them
+	LDR	R9, =XPAR_AXI_GPIO_SWS_BASEADDR
+	LDR	R11, =XPAR_AXI_TIMER_0_BASEADDR
+
+	@configure timer
+	@Count goes here -- 1s
+	LDR	R8, =XPAR_AXI_TIMER_0_CLOCK_FREQ_HZ/9
+ 	@Now load the load register.
+	STR 	R8, [R11, #XTC_TLR_OFFSET]
+	@Load the counter register.
+	LDR 	R8, =XTC_CSR_LOAD_MASK
+	STR 	R8, [R11, #XTC_TCSR_OFFSET]
+	@enable the countdown timer with autoload and an interrupt
+	LDR 	R8, =E254_TC_CSR_NEEDED_MASKS @ E254_TC_CSR_NEEDED_MASKS equated above in this file.
+	STR 	R8, [R11, #XTC_TCSR_OFFSET]
+
+	MOV 	R8, R0 @ total_events
+
+	@Switch back to system mode
+	LDR 	R1, =XREG_CPSR_SYSTEM_MODE
+	MSR 	CPSR_c, R1
+
+	@Enable fast interrupts
+	CPSIE 	f
+
+	;@ Load base addresses for LEDs and Slider Switch GPIO
+	ldr 	r5, =XPAR_AXI_GPIO_SWS_BASEADDR		;@ load base address of Switches into r4
+	ldr 	r6, =XPAR_AXI_GPIO_LEDS_BASEADDR	;@ load base address of Switches into r5
+	mov	r7, #167
+	str 	r7, [r6, #XGPIO_DATA_OFFSET]	;@write value to LED
+	BL	OLED_clear
+  	BL	OLED_divider
+
+poll:	LDR 	r7, [r5, #XGPIO_DATA_OFFSET]
+	STR	r7, [r6, #XGPIO_TRI_OFFSET]
+
+	CMP	R8, #14
+	MOVEQ	R8, #6
+	ADDNE	R8, R8, #1
+
+		LDR 	r11, [r5, #XGPIO_DATA_OFFSET]
+	AND	R11, r11, #SwsPBoth
+	CMP	R11, #160
+
+	LDR 	r7, [r5, #XGPIO_DATA_OFFSET]
+	AND	r7, r7, #SwsM
+	CMP	r7, #0
+	MOVEQ	r10, #0
+	BLNE	checker
+
+cont:
+  	B 	poll
+
+checker:
+	MOV R12, LR
+
+
+	CMP	r10, #1
+	BLNE	OLED_clear3
+
+	CMP	r10, #1
+	MOVNE 	R2, R9
+	MOVNE	r10, #1
+	BLNE  	OLED_flag
+
+	MOV PC, R12
+ENDFUNC asm_main
+;@ FIQHandler stuff below
+FUNC	FIQHandler
+@ Reminder.  FIQ mode has its own versions of R8 through R12 (and R13 and R14)
+@ Also, notice how fast this hander is.
+
+	PUSH 	{r0-r2, lr}
+
+	LDR 	R12, [R11, #XTC_TCSR_OFFSET]
+	TST 	R12, #XTC_CSR_INT_OCCURED_MASK @ see if timer interrupt occured.
+  	@Conditionally clear the timer interrupt here.
+  	MOVNE	R12, #E254_TC_CSR_NEEDED_MASKS @ E254_TC_CSR_NEEDED_MASKS equated above in this file.
+  	STRNE 	R12, [R11, #XTC_TCSR_OFFSET]
+  	ADDNE 	R8, R8, #1 @ increment count of total interruptss
+
+	LDR	R12, [R9, #XGPIO_DATA_OFFSET]
+	AND	R12, R12, #SwsPBoth
+	CMP	R12, #160
+	LDRNE	R12, [R9, #XGPIO_DATA_OFFSET]
+	ANDNE	R12, R12, #SwsP1
+  	CMPNE	R12, #128
+	BLNE	OLED_clear1
+
+	LDR	R12, [R9, #XGPIO_DATA_OFFSET]
+	AND	R12, R12, #SwsPBoth
+	CMP	R12, #160
+	LDRNE	R12, [R9, #XGPIO_DATA_OFFSET]
+	ANDNE	R12, R12, #SwsP2
+  	CMPNE	R12, #32
+	BLNE	OLED_clear2
+
+	CMP R8, #14
+	MOVEQ R8, #0
+
+	LDR	R12, [R9, #XGPIO_DATA_OFFSET]
+	AND	R12, R12, #SwsPBoth
+	CMP	R12, #160
+	LDRNE	R12, [R9, #XGPIO_DATA_OFFSET]
+	ANDNE	R12, R12, #SwsP1
+  	CMPNE	R12, #128
+  	MOVNE	R2, R8
+  	MOVNE 	R1, #1
+  	BLNE 	OLED_arrows
+
+	LDR	R12, [R9, #XGPIO_DATA_OFFSET]
+	AND	R12, R12, #SwsPBoth
+	CMP	R12, #160
+	LDRNE	R12, [R9, #XGPIO_DATA_OFFSET]
+	ANDNE	R12, R12, #SwsP2
+  	CMPNE	R12, #32
+  	MOVNE	R2, R8
+  	MOVNE 	R1, #3
+  	BLNE	OLED_arrows
+
+	LDR	R12, [R9, #XGPIO_DATA_OFFSET]
+	CMP 	r12, #0
+	BLEQ	OLED_clear0
+	BLEQ	OLED_welcome
+	BLEQ	welcome_speed
+	BLEQ	OLED_clear3
+  	BLEQ	OLED_divider
+  	MOVEQ	R10, #0
+
+	CMP	R10, #1
+	BEQ	skip
+	LDR	R12, [R9, #XGPIO_DATA_OFFSET]
+	AND	R12, R12, #SwsE
+	CMP	R12, #1
+	BLEQ	OLED_clear0
+	BLEQ	OLED_easy
+	BLEQ	Easy
+  	MOVEQ	R10, #1
+
+	CMP	R10, #1
+	BEQ	skip
+	LDR	R12, [R9, #XGPIO_DATA_OFFSET]
+	AND	R12, R12, #SwsM
+	CMP 	r12, #2
+	BLEQ	OLED_clear0
+	BLEQ	OLED_medium
+	BLEQ	Medium
+  	MOVEQ	R10, #1
+
+	CMP	R10, #1
+	BEQ	skip
+	LDR	R12, [R9, #XGPIO_DATA_OFFSET]
+	AND	R12, R12, #SwsH
+	CMP 	r12, #4
+	BLEQ	OLED_clear0
+	BLEQ	OLED_hard
+	BLEQ	Hard
+  	MOVEQ	R10, #1
+skip:
+  	POP 	{r0-r2, lr}
+
+	@ Dubious offset, I know. Still, here's the reference:
+	@ old --> http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0040d/Cacbacic.html
+	@ https://developer.arm.com/documentation/den0013/d/Exception-Handling/Exception-priorities/The-return-instruction?lang=en
+
+	@ The S at the end of SUBS causes the SPSR of the mode (FIQ in this case) to be put back in the CPSR
+	SUBS	PC, LR, #4
+ENDFUNC	FIQHandler
+
+welcome_speed:
+	@configure timer
+	@Count goes here -- 1s
+	LDR	R12, =XPAR_AXI_TIMER_0_CLOCK_FREQ_HZ/5
+ 	@Now load the load register.
+	STR 	R12, [R11, #XTC_TLR_OFFSET]
+	@Load the counter register.
+	LDR 	R12, =XTC_CSR_LOAD_MASK
+	STR 	R12, [R11, #XTC_TCSR_OFFSET]
+	@enable the countdown timer with autoload and an interrupt
+	LDR 	R12, =E254_TC_CSR_NEEDED_MASKS @ E254_TC_CSR_NEEDED_MASKS equated above in this file.
+	STR 	R12, [R11, #XTC_TCSR_OFFSET]
+	MOV    PC, LR
+Easy:
+	@configure timer
+	@Count goes here -- 1s
+	LDR	R12, =XPAR_AXI_TIMER_0_CLOCK_FREQ_HZ/15
+ 	@Now load the load register.
+	STR 	R12, [R11, #XTC_TLR_OFFSET]
+	@Load the counter register.
+	LDR 	R12, =XTC_CSR_LOAD_MASK
+	STR 	R12, [R11, #XTC_TCSR_OFFSET]
+	@enable the countdown timer with autoload and an interrupt
+	LDR 	R12, =E254_TC_CSR_NEEDED_MASKS @ E254_TC_CSR_NEEDED_MASKS equated above in this file.
+	STR 	R12, [R11, #XTC_TCSR_OFFSET]
+	MOV    PC, LR
+Medium:
+	@configure timer
+	@Count goes here -- 1s
+	LDR	R12, =XPAR_AXI_TIMER_0_CLOCK_FREQ_HZ/25
+ 	@Now load the load register.
+	STR 	R12,[R11, #XTC_TLR_OFFSET]
+	@Load the counter register.
+	LDR 	R12, =XTC_CSR_LOAD_MASK
+	STR 	R12, [R11, #XTC_TCSR_OFFSET]
+	@enable the countdown timer with autoload and an interrupt
+	LDR 	R12, =E254_TC_CSR_NEEDED_MASKS @ E254_TC_CSR_NEEDED_MASKS equated above in this file.
+	STR 	R12, [R11, #XTC_TCSR_OFFSET]
+	MOV    PC, LR
+Hard:
+	@configure timer
+	@Count goes here -- 1s
+	LDR	R12, =XPAR_AXI_TIMER_0_CLOCK_FREQ_HZ/35
+ 	@Now load the load register.
+	STR 	R12, [R11, #XTC_TLR_OFFSET]
+	@Load the counter register.
+	LDR 	R12, =XTC_CSR_LOAD_MASK
+	STR 	R12, [R11, #XTC_TCSR_OFFSET]
+	@enable the countdown timer with autoload and an interrupt
+	LDR 	R12, =E254_TC_CSR_NEEDED_MASKS @ E254_TC_CSR_NEEDED_MASKS equated above in this file.
+	STR 	R12, [R11, #XTC_TCSR_OFFSET]
+	MOV    PC, LR

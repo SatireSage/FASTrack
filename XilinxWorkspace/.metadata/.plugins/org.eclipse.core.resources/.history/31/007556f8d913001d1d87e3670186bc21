@@ -1,0 +1,173 @@
+@ Code for OLED display for ZedBoard for ENSC 254
+@ For OLED controller designed for ENSC 254 at SFU
+@ Copyright (C) 2022 School of Engineering Science, SFU
+
+#include "asm_include.h"
+#include "definitions.i"
+#include "macros.i"
+
+.section .rodata
+message: .asciz "FAS Track:"
+arrow: .asciz "~~>"
+Divider: .asciz "------------X---"
+Flag: .asciz "X"
+EasyMode: .asciz "S-Mode: Easy"
+MediumMode: .asciz "S-Mode: Medium"
+HardMode: .asciz "S-Mode: Hard"
+
+.section .data
+.align
+@Reserving space to use for the OLED
+counter_str:
+	 .space 16
+
+.section .text
+
+.equ 	OLED_char, XPAR_AXI_OLED_CONTROLLER_0_S_AXI_BASEADDR + OLED_CHAR_OFFSET @ 0x41240400
+
+FUNC	OLED_clear
+	LDR 	R0, =OLED_char
+	MOV 	R2, #64
+	MOV 	R3, #' '
+loop_clear:
+	STRB 	R3, [r0], #1
+	SUB 	R2, #1
+	CMP 	r2, #0
+	BNE 	loop_clear
+
+	mov	PC, LR
+ENDFUNC OLED_clear
+
+FUNC    OLED_clear0
+    LDR     R0, =OLED_char
+    MOV     R1, #0
+    ADD     R0, R0, R1, LSL #4
+    MOV     R2, #16
+    MOV     R3, #' '
+
+loop_clear0:
+    STRB    R3, [r0], #1
+    SUB     R2, R2, #1
+    CMP     R2, #0
+    BNE     loop_clear1
+
+    MOV     PC, LR
+ENDFUNC OLED_clear0
+
+FUNC    OLED_clear1
+    LDR     R0, =OLED_char
+    MOV     R1, #1
+    ADD     R0, R0, R1, LSL #4
+    MOV     R2, #16
+    MOV     R3, #' '
+
+loop_clear1:
+    STRB    R3, [r0], #1
+    SUB     R2, R2, #1
+    CMP     R2, #0
+    BNE     loop_clear1
+
+    MOV     PC, LR
+ENDFUNC OLED_clear1
+
+FUNC    OLED_clear2
+    LDR     R0, =OLED_char
+    MOV     R1, #3
+    ADD     R0, R0, R1, LSL #4
+    MOV     R2, #16
+    MOV     R3, #' '
+
+loop_clear2:
+    STRB    R3, [r0], #1
+    SUB     R2, R2, #1
+    CMP     R2, #0
+    BNE     loop_clear2
+
+    MOV    PC, LR
+ENDFUNC    OLED_clear2
+
+FUNC    OLED_clear3
+    LDR     R0, =OLED_char
+    MOV     R1, #2
+    ADD     R0, R0, R1, LSL #4
+    MOV     R2, #16
+    MOV     R3, #' '
+
+loop_clear3:
+    STRB    R3, [r0], #1
+    SUB     R2, R2, #1
+    CMP     R2, #0
+    BNE     loop_clear2
+
+    MOV    PC, LR
+ENDFUNC    OLED_clear3
+
+FUNC	OLED_welcome
+	;@ Display a nul terminated string on the OLED:
+	ldr 	r0, =OLED_char		;@load base address for OLED
+	ldr	r1, =message		;@ use r5 as a pointer for the message string
+OLED_print_loop:
+	ldrb 	r2, [r1], #1		;@ Load the character pointed to and advance pointer by 1 addr
+	cmp 	r2, #0			;@ stop when reaching null character
+	beq 	OLED_print_loop_stop
+	strb 	r2, [r0], #1		;@ store the character on OLED display buffer
+	b 	OLED_print_loop
+OLED_print_loop_stop:
+	mov	PC, LR
+ENDFUNC	OLED_welcome
+
+FUNC	OLED_divider
+	;@ Display a nul terminated string on the OLED:
+	ldr 	r0, =OLED_char		;@load base address for OLED
+	mov	r1, #2
+	add r0, r0, r1, LSL #4		;@ point r6 to the beginning of the specified row on OLED
+	add r0, r0, r2
+	ldr	r1, =Divider		;@ use r5 as a pointer for the message string
+	b 	OLED_print_loop
+ENDFUNC	OLED_divider
+
+FUNC	OLED_flag
+	;@ Display a nul terminated string on the OLED:
+	ldr 	r0, =OLED_char		;@load base address for OLED
+	mov	r1, #2
+	add r0, r0, r1, LSL #4		;@ point r6 to the beginning of the specified row on OLED
+	add r0, r0, r2
+	ldr	r1, =Flag		;@ use r5 as a pointer for the message string
+	b 	OLED_print_loop
+ENDFUNC	OLED_flag
+
+FUNC	OLED_arrows
+	;@ Display a nul terminated string on the OLED:
+	ldr 	r0, =OLED_char		;@load base address for OLED
+	add r0, r0, r1, LSL #4		;@ point r6 to the beginning of the specified row on OLED
+	add r0, r0, r2
+	ldr	r1, =arrow		;@ use r5 as a pointer for the message string
+	b 	OLED_print_loop
+ENDFUNC	OLED_arrows
+
+FUNC	OLED_easy
+	;@ Display a nul terminated string on the OLED:
+	ldr 	r0, =OLED_char		;@load base address for OLED
+	mov	r1, #0
+	add r0, r0, r1, LSL #4		;@ point r6 to the beginning of the specified row on OLED
+	ldr	r1, =EasyMode		;@ use r5 as a pointer for the message string
+	b 	OLED_print_loop
+ENDFUNC	OLED_easy
+
+FUNC	OLED_medium
+	;@ Display a nul terminated string on the OLED:
+	ldr 	r0, =OLED_char		;@load base address for OLED
+	mov	r1, #0
+	add r0, r0, r1, LSL #4		;@ point r6 to the beginning of the specified row on OLED
+	ldr	r1, =MediumMode		;@ use r5 as a pointer for the message string
+	b 	OLED_print_loop
+ENDFUNC	OLED_medium
+
+FUNC	OLED_hard
+	;@ Display a nul terminated string on the OLED:
+	ldr 	r0, =OLED_char		;@load base address for OLED
+	mov	r1, #0
+	add r0, r0, r1, LSL #4		;@ point r6 to the beginning of the specified row on OLED
+	ldr	r1, =HardMode		;@ use r5 as a pointer for the message string
+	b 	OLED_print_loop
+ENDFUNC	OLED_hard

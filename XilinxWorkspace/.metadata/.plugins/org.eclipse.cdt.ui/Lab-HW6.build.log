@@ -1,0 +1,7 @@
+03:20:31 **** Clean-only build of configuration Debug for project Lab-HW6 ****
+make clean 
+rm -rf  ./src/asm.o  ./src/asm.d  Lab-HW6.elf.size  Lab-HW6.elf
+' '
+
+03:20:31 Build Finished (took 162ms)
+

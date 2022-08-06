@@ -1,0 +1,7 @@
+15:11:03 **** Clean-only build of configuration Debug for project Lab-HW7 ****
+make clean 
+rm -rf  ./src/BigFib.o ./src/OLED.o ./src/asm.o ./src/bigAdd.o ./src/fib.o ./src/main.o  ./src/OLED.d ./src/asm.d  ./src/BigFib.d ./src/fib.d ./src/main.d  Lab-HW7.elf.size  Lab-HW7.elf
+ 
+
+15:11:04 Build Finished (took 489ms)
+
