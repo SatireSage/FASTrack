@@ -51,7 +51,7 @@ identify the switch that has been flipped.
 
 Below are the switches and their defined purpose as well as location on the board:
 
-## SW 7 SW 6 SW 5 SW 4 SW 3 SW 2 SW 1 SW 0
+## Switch Setup
 <img width="798" alt="Screen Shot 2022-08-06 at 4 32 29 AM" src="https://user-images.githubusercontent.com/49692422/183247127-e9c78386-9789-4541-b85f-7b92fa69e5ab.png">
 
 | Switch     | Switches Purpose |
