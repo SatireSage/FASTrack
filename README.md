@@ -93,8 +93,7 @@ This behaviour can be seen in the following images, where either one or both use
 chosen to stop their arrows. When the speed difficulty mode switches have been changed by
 accident, the game does not acknowledge the change as the users are still playing the game.
 
-```
-<img width="743" alt="Screen Shot 2022-08-06 at 4 35 55 AM" src="https://user-images.githubusercontent.com/49692422/183247218-fea390ad-1da8-4be5-a19b-701cb9dbacbb.png">
+<img width="743" alt="Screen Shot 2022-08-06 at 4 35 55 AM" src="https://user-images.githubusercontent.com/49692422/183247324-3efb8a42-8edc-41f9-92d5-2da7da5a3833.png">
 
 Switch Error Avoidance In Action
 ```
