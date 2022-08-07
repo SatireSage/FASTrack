@@ -1,3 +1,6 @@
+#Authors
+[Bryce Leung](https://github.com/Bryce-Leung)
+[Sahaj Singh](https://github.com/SatireSage)
 # FASTrack
 Reaction Time Based Game
 
