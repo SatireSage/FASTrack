@@ -1,11 +1,10 @@
 Authors:
-[Bryce Leung](https://github.com/Bryce-Leung), 
-[Sahaj Singh](https://github.com/SatireSage)
-# FASTrack
-Reaction Time Based Game
+[Sahaj Singh](https://github.com/SatireSage),
+[Bryce Leung](https://github.com/Bryce-Leung)
 
-This game is written in ARM7 assembly instruction set for the Xilinx ZedBoard.
-The Zedboard is based on Zynq - 7000 EPP Development Kit
+# FASTrack Overview:
+Reaction Time Based Game
+This game is written in ARM7 assembly instruction set for the Xilinx ZedBoard (The Zedboard is based on Zynq - 7000 EPP Development Kit)
 
 # FAS Track Documentation
 
@@ -13,8 +12,8 @@ The Zedboard is based on Zynq - 7000 EPP Development Kit
 
 FAS Track is a user reaction time game, where the users or users try to get their arrow
 onto the given finish mark. FAS Track utilizes the LEDs, switches, and OLED display on the
-ZedBoard. Written in the ARM7 assembly instruction set for the Xilinx ZedBoard, based on the
-Zynq – 7000 EPP development kit. Through this document, you will gain a further
+ZedBoard. Written in the **ARM7 assembly** instruction set for the **Xilinx ZedBoard**, based on the
+Zynq – 7000 EPP development kit. Additionaly a few key concepts demonstrated through this project are **timer interrupts**, **masking**, **oled display** as well as FSMs.Through this document, you will gain a further
 understanding of how these components are utilized.
 
 ### OLED Display:
